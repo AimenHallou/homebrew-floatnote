@@ -10,22 +10,16 @@ class Floatnote < Formula
   def install
     system "swift", "build", "--disable-sandbox", "-c", "release", "--product", "FloatNote"
 
-    # The binary may be at FloatNote or floatnote depending on the system
-    binary = if File.exist?(".build/release/FloatNote")
-      ".build/release/FloatNote"
-    else
-      ".build/release/floatnote"
-    end
-
+    binary = buildpath/".build/release/FloatNote"
     bin.install binary => "floatnote"
 
     # Build the .app bundle
     app_dir = prefix/"FloatNote.app/Contents"
     (app_dir/"MacOS").mkpath
     cp binary, app_dir/"MacOS/FloatNote"
-    if File.exist?("Sources/FloatNote/Resources/Info.plist")
-      cp "Sources/FloatNote/Resources/Info.plist", app_dir/"Info.plist"
-    end
+
+    plist = buildpath/"Sources/FloatNote/Resources/Info.plist"
+    cp plist, app_dir/"Info.plist" if plist.exist?
   end
 
   def caveats
