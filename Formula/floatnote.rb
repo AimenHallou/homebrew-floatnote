@@ -1,24 +1,31 @@
 class Floatnote < Formula
   desc "Minimal floating sticky note for macOS — translucent, always on top"
   homepage "https://github.com/AimenHallou/floatnote"
-  url "https://github.com/AimenHallou/floatnote/archive/refs/tags/v1.0.0.tar.gz"
-  sha256 "60bf414efdbc76c4c829222ee74b1d776fe07614ccc4de406d039d522006a105"
+  url "https://github.com/AimenHallou/floatnote/archive/refs/tags/v1.1.0.tar.gz"
+  sha256 "9ce2268976902678de8d6dbc38c8fd861089003674f9c53aeadba2cd9a25bdce"
   license "MIT"
 
   depends_on :macos => :ventura
-  depends_on xcode: ["14.0", :build]
 
   def install
-    system "swift", "build", "--disable-sandbox", "-c", "release"
+    system "swift", "build", "--disable-sandbox", "-c", "release", "--product", "FloatNote"
 
-    # Install the binary
-    bin.install ".build/release/FloatNote"
+    # The binary may be at FloatNote or floatnote depending on the system
+    binary = if File.exist?(".build/release/FloatNote")
+      ".build/release/FloatNote"
+    else
+      ".build/release/floatnote"
+    end
+
+    bin.install binary => "floatnote"
 
     # Build the .app bundle
     app_dir = prefix/"FloatNote.app/Contents"
     (app_dir/"MacOS").mkpath
-    cp ".build/release/FloatNote", app_dir/"MacOS/FloatNote"
-    cp "Sources/FloatNote/Resources/Info.plist", app_dir/"Info.plist"
+    cp binary, app_dir/"MacOS/FloatNote"
+    if File.exist?("Sources/FloatNote/Resources/Info.plist")
+      cp "Sources/FloatNote/Resources/Info.plist", app_dir/"Info.plist"
+    end
   end
 
   def caveats
@@ -34,6 +41,6 @@ class Floatnote < Formula
   end
 
   test do
-    assert_predicate bin/"FloatNote", :executable?
+    assert_predicate bin/"floatnote", :executable?
   end
 end
